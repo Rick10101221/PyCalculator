@@ -21,13 +21,16 @@ class Window(QMainWindow):
         #self.button.setText("Click Me")
         #self.button.move(100,100)
         #self.button.clicked.connect(self.clicked)
+
+    def createDictionary(self, list1):
+        self.list1 = list1
     
     def createButtons(self, buttonNumber, buttonText):
         d = {}
         for _ in range(buttonNumber):
             d[f"button{_}"] = QtWidgets.QPushButton(self)
 
-        i = 0   
+        i = 0
         for key in d.keys():
             self.key = d[key]
             self.key.setText(buttonText)
@@ -36,7 +39,8 @@ class Window(QMainWindow):
             i = i + 1
 
     def clicked(self):
-        self.label.setText('changed')
+        text = self.list1[randint(0, len(self.list1) - 1)]
+        self.label.setText(text)
         self.update()
 
     def update(self):
@@ -46,8 +50,10 @@ class Window(QMainWindow):
 
 def main():
     buttonNumber, buttonText = 3, 'Click Me'
+    list1 = ['simp', 'what the fuck', 'stinky', 'uh oh', 'monkaS', 'poopoo', 'peepee', 'hire me']
     app = QApplication(sys.argv)
     win = Window()
+    win.createDictionary(list1)
     win.createButtons(buttonNumber, buttonText)
     win.show()
     sys.exit(app.exec_())
