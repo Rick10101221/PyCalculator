@@ -137,6 +137,7 @@ class Ui_MainWindow(object):
         self.globalSet1 = {'+', '/', '-', '*', '=', '^', '%', '<', ':', ';', '.'}
         self.separateSet = {'+', '-'}
 
+    # CAN'T PUT 900
     def clicked(self, text):
         if (len(self.globalString) == 1 and self.globalString[0] == '0'):
             # text.isdigit() and \
