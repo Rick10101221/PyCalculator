@@ -81,6 +81,7 @@ class Ui_MainWindow(object):
         self.label.setLineWidth(2)
         self.label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.label.setObjectName("label")
+        self.label.setText('0')
         self.square = QtWidgets.QPushButton(self.centralwidget)
         self.square.setGeometry(QtCore.QRect(340, 140, 51, 51))
         self.square.setObjectName("square")
@@ -125,56 +126,75 @@ class Ui_MainWindow(object):
         self.allClear.clicked.connect(lambda: self.clicked(":"))   # self check
         self.Delete.clicked.connect(lambda: self.clicked(";"))     # self check
 
+    def __init__(self):
+        self.globalString = '0'
+        self.globalSet = {'+', '/', '-', '*', '=', '^',\
+                           '%', '<', ':', ';', '.'}
+        self.symbolsForLengthGT0 = {'+', '/', '-', '*', '%', '.'}
+        self.equalLastOperator = False
+
+    def emptyGlobal(self):
+        return len(self.globalString) == 0
+
     def lastChar(self) -> str:
-        if (len(self.globalString) == 0): return ''
-        return self.globalString[len(self.globalString) - 1]
+        if (self.emptyGlobal()): return ''
+        return self.globalString[-1]
 
     def isLastCharOperator(self):
-        return 1 if self.lastChar() in self.globalSet1 else 0
+        return 1 if self.lastChar() in self.globalSet else 0
 
-    def globalStr(self, string):
-        self.globalString = string
-        self.globalSet1 = {'+', '/', '-', '*', '=', '^', '%', '<', ':', ';', '.'}
-        self.separateSet = {'+', '-'}
-
-    # CAN'T PUT 900
     def clicked(self, text):
-        if (len(self.globalString) == 1 and self.globalString[0] == '0'):
-            # text.isdigit() and \
-            #self.globalString.isdigit() and int(self.globalString) == 0):
-            self.globalString = ''
-        if len(self.globalString) > 0:
+        if self.equalLastOperator:
+            self.clear()
+        self.equalLastOperator = False
+
+        if text.isdigit():
+            if (len(self.globalString) == 1 and self.globalString[0] == '0'):
+                self.globalString = text
+            else:
+                self.globalString += text
+
+        elif text == ';':
+            self.delete()
+        
+        elif text == ':':
+            self.clear()
+        
+        elif text == '<' and (self.emptyGlobal() or\
+            (self.isLastCharOperator() and self.lastChar() != '.')):
+            self.globalString += str(round(math.pi, 4))
+        
+        elif len(self.globalString) > 0:
             if not(self.isLastCharOperator()):
                 if text == '^':
                     self.globalString += '**2'
                 elif text == '=':
                     self.equal()
-        if text == '<':
-            if len(self.globalString) == 0 or self.isLastCharOperator() and self.lastChar() != '.':
-                self.globalString += str(round(math.pi, 4))
-        elif text == ';':
-            self.delete()
-        elif text == ':':
-            self.clearing()         # cab + c
-        elif text.isdigit() or text == '-' or (len(self.globalString) > 0 and not(self.isLastCharOperator())):
-            if text.isdigit() and self.lastChar() != '0' or text != '=' and text != '^' and self.lastChar() != '0' and self.lastChar() != '-' or (self.lastChar() != '-' and text in self.separateSet):
-                self.globalString += text
+                elif text in self.symbolsForLengthGT0:
+                    self.globalString += text
+
         self.update()
 
-    def clearing(self):
-        self.globalString = ''
+    def clear(self):
+        self.globalString = '0'
 
     def delete(self):
-        if len(self.globalString) != 0:
-            self.globalString = self.globalString[:len(self.globalString) - 1]
+        if not(self.emptyGlobal()):
+            self.globalString = self.globalString[:-1]
+            while not(self.lastChar().isdigit()):
+                self.globalString = self.globalString[:-1]
     
     def equal(self):
         if not(self.isLastCharOperator()):
-            x = eval(self.globalString)
-            x = str(round(x, 5))
-            if x.endswith('.0'):
-                x = x[:-2]
-            self.globalString = x
+            try:
+                x = eval(self.globalString)
+                x = str(round(x, 5))
+                if x.endswith('.0'):
+                    x = x[:-2]
+                self.globalString = x
+            except:
+                self.globalString = 'hehe xd noob'
+            self.equalLastOperator = True
     
     def update(self):
         print(self.globalString)
@@ -201,7 +221,7 @@ class Ui_MainWindow(object):
         self.equals.setText(_translate("MainWindow", "="))
         self.Delete.setText(_translate("MainWindow", "Del"))
         self.allClear.setText(_translate("MainWindow", "AC"))
-        self.label.setText(_translate("MainWindow", ""))
+        self.label.setText(_translate("MainWindow", "0"))
         self.square.setText(_translate("MainWindow", "a**2"))
         self.mod.setText(_translate("MainWindow", "%"))
         self.pi.setText(_translate("MainWindow", "pi"))
@@ -212,7 +232,6 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
-    ui.globalStr('')
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
