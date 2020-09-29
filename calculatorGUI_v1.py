@@ -119,7 +119,7 @@ class Ui_MainWindow(object):
         self.subtract.clicked.connect(lambda: self.clicked("-"))
         self.multiply.clicked.connect(lambda: self.clicked("*"))
         self.equals.clicked.connect(lambda: self.clicked("="))     # self check
-        self.square.clicked.connect(lambda: self.clicked("^"))     # self check
+        self.square.clicked.connect(lambda: self.clicked("$"))     # self check
         self.mod.clicked.connect(lambda: self.clicked("%"))
         self.pi.clicked.connect(lambda: self.clicked("<"))         # self check
 
@@ -128,13 +128,13 @@ class Ui_MainWindow(object):
 
     def __init__(self):
         self.globalString = '0'
-        self.globalSet = {'+', '/', '-', '*', '=', '^',\
+        self.globalSet = {'+', '/', '-', '*', '=', '$',\
                            '%', '<', ':', ';', '.'}
         self.symbolsForLengthGT0 = {'+', '/', '-', '*', '%', '.'}
         self.equalLastOperator = False
 
     def emptyGlobal(self):
-        return len(self.globalString) == 0
+        return len(self.globalString) == 1 and self.globalString[0] == '0'
 
     def lastChar(self) -> str:
         if (self.emptyGlobal()): return ''
@@ -144,7 +144,7 @@ class Ui_MainWindow(object):
         return 1 if self.lastChar() in self.globalSet else 0
 
     def clicked(self, text):
-        if self.equalLastOperator:
+        if self.equalLastOperator and text.isdigit() and text != '=':
             self.clear()
         self.equalLastOperator = False
 
@@ -162,11 +162,17 @@ class Ui_MainWindow(object):
         
         elif text == '<' and (self.emptyGlobal() or\
             (self.isLastCharOperator() and self.lastChar() != '.')):
-            self.globalString += str(round(math.pi, 4))
+            if self.emptyGlobal():
+                self.globalString = str(round(math.pi, 4))
+            else:
+                self.globalString += str(round(math.pi, 4))
+
+        elif text == '-' and not(self.isLastCharOperator()):
+            self.globalString += text
         
         elif len(self.globalString) > 0:
             if not(self.isLastCharOperator()):
-                if text == '^':
+                if text == '$':
                     self.globalString += '**2'
                 elif text == '=':
                     self.equal()
@@ -181,7 +187,9 @@ class Ui_MainWindow(object):
     def delete(self):
         if not(self.emptyGlobal()):
             self.globalString = self.globalString[:-1]
-            while not(self.lastChar().isdigit()):
+            if len(self.globalString) == 0:
+                self.globalString = '0'
+            while not(self.emptyGlobal()) and not(self.lastChar().isdigit()):
                 self.globalString = self.globalString[:-1]
     
     def equal(self):
